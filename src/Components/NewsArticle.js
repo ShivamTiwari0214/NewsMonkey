@@ -1,75 +1,58 @@
-import React, { Component } from "react";
+import React, { useEffect,useState } from "react";
 import Loading from "./Loading";
 import PropTypes from "prop-types";
 import InfiniteScroll from "react-infinite-scroll-component";
 
-export default class NewsArticle extends Component {
-  static propTypes = {
-    country: PropTypes.string,
-    category: PropTypes.string,
-    pageSize: PropTypes.number,
-  };
+export default function NewsArticle (props){
+  const [articles,setArticles]=useState([]);
+  // const [loading,setLoading]=useState(true);
+  const [page,setPage]=useState(1);
+  const [totalResults,setTotalResults] = useState(10);
 
-  constructor(props) {
-    super(props);
-    this.state = {
-      articles: [],
-      loading: true,
-      page: 1,
-      totalResults: 10,
-    };
-    document.title = `${this.props.category}- NewsMonkey`;
-  }
+  
+    
+  
 
-  async pageUpdate() {
-    this.props.setProgress(10);
-    let url = `https://newsapi.org/v2/top-headlines?country=${this.props.country}&category=${this.props.category}&apiKey=${this.props.newsAPIKey}&pageSize=10&page=${this.state.page}`;
+ const pageUpdate = async () => {
+    props.setProgress(10);
+    let url = `https://newsapi.org/v2/top-headlines?country=${props.country}&category=${props.category}&apiKey=${props.newsAPIKey}&pageSize=10&page=${page}`;
     let data = await fetch(url);
-    this.props.setProgress(30);
+    props.setProgress(30);
     let parsedData = await data.json();
-    this.props.setProgress(70);
-    this.setState({
-      articles: parsedData.articles,
-      totalResults: parsedData.totalResults,
-      loading: false,
-    });
-    this.props.setProgress(100);
+    props.setProgress(70);
+    setArticles(parsedData.articles)
+    setTotalResults(parsedData.totalResults)
+    // setLoading(false)
+
+    props.setProgress(100);
   }
-  async componentDidMount() {
-    this.pageUpdate();
-  }
+  useEffect(()=>{
+    document.title = `${props.category}- NewsMonkey`;
+    pageUpdate();
+    // eslint-disable-next-line 
+  },[])
+  
 
 
-   showLoader = 1 ;
-   fetchData = async()=>{
-    let url = `https://newsapi.org/v2/top-headlines?country=${this.props.country}&category=${this.props.category}&apiKey=${this.props.newsAPIKey}&pageSize=10&page=${this.state.page+1}`;
-    
-    this.setState({
-      page:this.state.page+1
-    })
-    
+  const fetchData = async()=>{
+    let url = `https://newsapi.org/v2/top-headlines?country=${props.country}&category=${props.category}&apiKey=${props.newsAPIKey}&pageSize=10&page=${page+1}`;
+    setPage(page+1)
     let data = await fetch(url);
     let parsedData = await data.json();
-    this.setState({
-      articles: this.state.articles.concat(parsedData.articles),
-      totalResults: parsedData.totalResults,
-      loading: false,
-    });
-    this.showLoader=this.state.articles.concat(parsedData.articles).length
-    console.log(this.showLoader +' '+ this.state.totalResults)
-  }
+    setArticles(articles.concat(parsedData.articles))
+    setTotalResults(parsedData.totalResults)
+    }
 
 
-  render() {
-    // let { title, descricption,imageURL } = this.props;
-    // let element = this.state.articles[0];
+    // let { title, descricption,imageURL } = props;
+    // let element = state.articles[0];
 
     return (
       <>
         <InfiniteScroll
-          dataLength={this.state.articles.length} 
-          next={this.fetchData}
-          hasMore={this.showLoader<this.state.totalResults}
+          dataLength={articles.length} 
+          next={fetchData}
+          hasMore={(articles.length<totalResults)}
           loader={<Loading/>}
           endMessage={
             <p style={{ textAlign: "center" }}>
@@ -79,7 +62,7 @@ export default class NewsArticle extends Component {
         >
           <div className="container">
         <div className="row">
-          {this.state.articles.map((element ,id) => {
+          {articles.map((element ,id) => {
               return (
                 element.title != null &&
                 element.description != null && (
@@ -138,4 +121,10 @@ export default class NewsArticle extends Component {
       </>
     );
   }
-}
+
+
+NewsArticle.propTypes = {
+  country: PropTypes.string,
+  category: PropTypes.string,
+  pageSize: PropTypes.number,
+};

@@ -1,7 +1,5 @@
-import React, { Component } from "react";
 import loading from "./loading-gif.gif";
-export default class Loading extends Component {
-  render() {
+export default function Loading (){
     return (
       <div
         className="container text-center d-flex justify-content-center"
@@ -14,4 +12,4 @@ export default class Loading extends Component {
       </div>
     );
   }
-}
+
